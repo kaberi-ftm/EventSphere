@@ -7,5 +7,8 @@ use Illuminate\Http\Request;
 
 class ParticipantDashboardController extends Controller
 {
-    //
+     public function index()
+    {
+        return view('participant.dashboard');
+    }
 }

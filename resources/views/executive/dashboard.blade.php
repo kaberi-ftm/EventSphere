@@ -1,1 +1,8 @@
-<h1>Executive Dashboard</h1>
+@extends('layouts.app')
+
+@section('content')
+<div class="container py-4">
+    <h2>Executive Dashboard</h2>
+    <p>Welcome, {{ auth()->user()->name }}!</p>
+</div>
+@endsection
