@@ -9,20 +9,26 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
-    }
+  public function up(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->foreignId('role_id')
+              ->nullable()
+              ->after('id')
+              ->constrained('roles')
+              ->nullOnDelete();
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
-    }
+        $table->unsignedInteger('engagement_points')
+              ->default(0)
+              ->after('role_id');
+    });
+}
+
+  public function down(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->dropForeign(['role_id']);
+        $table->dropColumn(['role_id', 'engagement_points']);
+    });
+}
 };
