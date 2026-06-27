@@ -1,19 +1,63 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClubController;
+use App\Http\Controllers\EventController;
+
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
 
+/*
+|--------------------------------------------------------------------------
+| Public Route
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Dashboard (MAIN)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes (Core App)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    // Clubs CRUD
+    Route::resource('clubs', ClubController::class);
+
+    // Events CRUD
+    Route::resource('events', EventController::class);
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Role-Based Dashboards
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
@@ -33,11 +77,11 @@ Route::middleware(['auth', 'role:participant'])->group(function () {
     Route::get('/participant/dashboard', [ParticipantDashboardController::class, 'index'])
         ->name('participant.dashboard');
 });
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
- 
-});
+
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/auth.php';

@@ -13,7 +13,23 @@
         <div class="card">
 
             <div class="card-body">
+@extends('adminlte::page')
 
+@section('title', 'Dashboard')
+
+@section('content_header')
+    <h1>Dashboard</h1>
+@stop
+
+@section('content')
+
+<div class="alert alert-success">
+
+    Welcome to EventSphere!
+
+</div>
+
+@stop
                 <h6>Total Events</h6>
 
                 <h2>25</h2>

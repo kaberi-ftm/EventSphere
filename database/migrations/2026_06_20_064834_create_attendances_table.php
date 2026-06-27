@@ -11,10 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attendances', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+       Schema::create('attendances', function (Blueprint $table) {
+    $table->id();
+
+    $table->foreignId('event_id')
+        ->constrained('events')
+        ->cascadeOnDelete();
+
+    $table->foreignId('user_id')
+        ->constrained('users')
+        ->cascadeOnDelete();
+
+    $table->boolean('is_present')->default(false);
+
+    $table->timestamp('checked_in_at')->nullable();
+
+    $table->timestamps();
+
+    $table->unique(['event_id', 'user_id']);
+});
     }
 
     /**

@@ -11,10 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('club_memberships', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+   Schema::create('club_memberships', function (Blueprint $table) {
+    $table->id();
+
+    $table->foreignId('user_id')
+        ->constrained('users')
+        ->cascadeOnDelete();
+
+    $table->foreignId('club_id')
+        ->constrained('clubs')
+        ->cascadeOnDelete();
+
+    // IMPORTANT: club-level role (admin/member/moderator)
+    $table->string('member_role')->default('member');
+
+    $table->timestamps();
+
+    $table->unique(['user_id', 'club_id']);
+
+   
+});
     }
 
     /**
