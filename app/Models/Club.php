@@ -1,15 +1,16 @@
 <?php
 namespace App\Models;
 
+use App\Models\ClubMembership;
+use App\Models\Event;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use App\Models\User;
 
 class Club extends Model
 {
-    protected $table = 'clubs';
-
     protected $fillable = [
         'name',
         'description',
@@ -19,15 +20,14 @@ class Club extends Model
 
     public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'admin_user_id');
+        return $this->belongsTo(User::class);
     }
 
-    public function memberships(): HasMany
+    public function membership(): HasMany
     {
         return $this->hasMany(ClubMembership::class);
     }
-
-    public function events(): HasMany
+     public function events(): HasMany
     {
         return $this->hasMany(Event::class);
     }

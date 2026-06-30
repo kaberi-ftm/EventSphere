@@ -17,6 +17,16 @@ use App\Http\Controllers\Participant\ParticipantDashboardController;
 | Public Route
 |--------------------------------------------------------------------------
 */
+Route::resource('events', EventController::class);
+
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::resource('clubs', ClubController::class);
+
+    });
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,8 +50,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 
 Route::middleware(['auth'])->group(function () {
 
-    // Clubs CRUD
-    Route::resource('clubs', ClubController::class);
+  
 
     // Events CRUD
     Route::resource('events', EventController::class);
