@@ -14,13 +14,12 @@
     Users
 </a>
 
-<a href="#">
+<a href="{{ route('admin.clubs.index') }}">
     <i class="bi bi-buildings"></i>
     Clubs
 </a>
 
-<a href="#">
-    <i class="bi bi-calendar-event"></i>
+<a href="{{ route('admin.events.index') }}">
     Events
 </a>
 

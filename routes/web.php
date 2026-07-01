@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\Admin\AdminDashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
@@ -7,7 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\EventController;
 
-use App\Http\Controllers\Admin\AdminDashboardController;
+
 use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
@@ -17,7 +17,7 @@ use App\Http\Controllers\Participant\ParticipantDashboardController;
 | Public Route
 |--------------------------------------------------------------------------
 */
-Route::resource('events', EventController::class);
+
 
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
@@ -25,6 +25,8 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
 
         Route::resource('clubs', ClubController::class);
+        Route::resource('events', EventController::class);
+
 
     });
 
@@ -52,8 +54,6 @@ Route::middleware(['auth'])->group(function () {
 
   
 
-    // Events CRUD
-    Route::resource('events', EventController::class);
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
