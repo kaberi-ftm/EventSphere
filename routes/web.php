@@ -6,8 +6,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\EventController;
-
-
+use App\Http\Controllers\VenueController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
@@ -26,7 +26,8 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('clubs', ClubController::class);
         Route::resource('events', EventController::class);
-
+        Route::resource('venues', VenueController::class);
+        Route::resource('registrations', RegistrationController::class);
 
     });
 
