@@ -23,16 +23,18 @@
     Events
 </a>
 
-<a href="#">
+<a href="{{ route('admin.venues.index') }}">
     <i class="bi bi-geo-alt-fill"></i>
     Venues
 </a>
 
-<a href="#">
+<a href="{{ route('admin.volunteers.index') }}">
     <i class="bi bi-person-workspace"></i>
     Volunteers
 </a>
-
+<a href="{{ route('admin.registrations.index') }}">
+    Event Registrations
+</a>
 <a href="#">
     <i class="bi bi-cash-stack"></i>
     Budgets

@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class TaskController extends Controller
 {
+    /**
+     * Display all tasks for admin.
+     */
     public function index(): View
     {
         $tasks = DB::select("
@@ -34,6 +38,9 @@ class TaskController extends Controller
         );
     }
 
+    /**
+     * Show task create form.
+     */
     public function create(): View
     {
         $volunteers = $this->approvedVolunteers();
@@ -44,20 +51,33 @@ class TaskController extends Controller
         );
     }
 
+    /**
+     * Store a new task.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'volunteer_id' => [
                 'required',
-                'exists:volunteers,id'
+                'exists:volunteers,id',
             ],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
             'status' => [
                 'nullable',
-                'in:pending,in_progress,completed'
+                'in:pending,in_progress,completed',
             ],
-            'deadline' => ['nullable', 'date'],
+            'deadline' => [
+                'nullable',
+                'date',
+            ],
         ]);
 
         $volunteer = DB::selectOne("
@@ -65,7 +85,9 @@ class TaskController extends Controller
             FROM volunteers
             WHERE id = ?
             AND LOWER(status) = 'approved'
-        ", [$validated['volunteer_id']]);
+        ", [
+            $validated['volunteer_id'],
+        ]);
 
         if (!$volunteer) {
             return back()
@@ -76,49 +98,74 @@ class TaskController extends Controller
                 );
         }
 
-        DB::insert("
-            INSERT INTO tasks
-            (
-                volunteer_id,
-                title,
-                description,
-                status,
-                deadline,
-                created_at,
-                updated_at
-            )
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                ?,
-                TO_TIMESTAMP(
+        $status = $validated['status'] ?? 'pending';
+
+        try {
+            DB::insert("
+                INSERT INTO tasks
+                (
+                    volunteer_id,
+                    title,
+                    description,
+                    status,
+                    deadline,
+                    completed_at,
+                    created_at,
+                    updated_at
+                )
+                VALUES
+                (
                     ?,
-                    'YYYY-MM-DD\"T\"HH24:MI'
-                ),
-                SYSTIMESTAMP,
-                SYSTIMESTAMP
-            )
-        ", [
-            $validated['volunteer_id'],
-            $validated['title'],
-            $validated['description'] ?? null,
-            $validated['status'] ?? 'pending',
-            $validated['deadline'] ?? null,
-        ]);
+                    ?,
+                    ?,
+                    ?,
+                    TO_TIMESTAMP(
+                        ?,
+                        'YYYY-MM-DD\"T\"HH24:MI'
+                    ),
+                    CASE
+                        WHEN ? = 'completed'
+                        THEN SYSTIMESTAMP
+                        ELSE NULL
+                    END,
+                    SYSTIMESTAMP,
+                    SYSTIMESTAMP
+                )
+            ", [
+                $validated['volunteer_id'],
+                $validated['title'],
+                $validated['description'] ?? null,
+                $status,
+                $validated['deadline'] ?? null,
+                $status,
+            ]);
+        } catch (QueryException $exception) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Task could not be created. Please check the submitted information.'
+                );
+        }
 
         return redirect()
             ->route('admin.tasks.index')
-            ->with('success', 'Task assigned successfully.');
+            ->with(
+                'success',
+                'Task assigned successfully.'
+            );
     }
 
+    /**
+     * Display one task.
+     */
     public function show($id): View
     {
         $task = DB::selectOne("
             SELECT
                 t.*,
                 u.name AS volunteer_name,
+                u.email AS volunteer_email,
                 e.title AS event_title,
                 v.role AS volunteer_role
             FROM tasks t
@@ -129,22 +176,40 @@ class TaskController extends Controller
             JOIN events e
                 ON v.event_id = e.id
             WHERE t.id = ?
-        ", [$id]);
+        ", [
+            $id,
+        ]);
 
-        abort_if(!$task, 404, 'Task not found.');
+        abort_if(
+            !$task,
+            404,
+            'Task not found.'
+        );
 
-        return view('admin.tasks.show', compact('task'));
+        return view(
+            'admin.tasks.show',
+            compact('task')
+        );
     }
 
+    /**
+     * Show task edit form.
+     */
     public function edit($id): View
     {
         $task = DB::selectOne("
             SELECT *
             FROM tasks
             WHERE id = ?
-        ", [$id]);
+        ", [
+            $id,
+        ]);
 
-        abort_if(!$task, 404, 'Task not found.');
+        abort_if(
+            !$task,
+            404,
+            'Task not found.'
+        );
 
         $volunteers = $this->approvedVolunteers();
 
@@ -154,30 +219,52 @@ class TaskController extends Controller
         );
     }
 
+    /**
+     * Update a task.
+     */
     public function update(
         Request $request,
         $id
     ): RedirectResponse {
         $task = DB::selectOne("
-            SELECT id
+            SELECT
+                id,
+                status,
+                completed_at
             FROM tasks
             WHERE id = ?
-        ", [$id]);
+        ", [
+            $id,
+        ]);
 
-        abort_if(!$task, 404, 'Task not found.');
+        abort_if(
+            !$task,
+            404,
+            'Task not found.'
+        );
 
         $validated = $request->validate([
             'volunteer_id' => [
                 'required',
-                'exists:volunteers,id'
+                'exists:volunteers,id',
             ],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+            ],
             'status' => [
                 'required',
-                'in:pending,in_progress,completed'
+                'in:pending,in_progress,completed',
             ],
-            'deadline' => ['nullable', 'date'],
+            'deadline' => [
+                'nullable',
+                'date',
+            ],
         ]);
 
         $volunteer = DB::selectOne("
@@ -185,7 +272,9 @@ class TaskController extends Controller
             FROM volunteers
             WHERE id = ?
             AND LOWER(status) = 'approved'
-        ", [$validated['volunteer_id']]);
+        ", [
+            $validated['volunteer_id'],
+        ]);
 
         if (!$volunteer) {
             return back()
@@ -196,72 +285,135 @@ class TaskController extends Controller
                 );
         }
 
-        DB::update("
-            UPDATE tasks
-            SET
-                volunteer_id = ?,
-                title = ?,
-                description = ?,
-                status = ?,
-                deadline = TO_TIMESTAMP(
-                    ?,
-                    'YYYY-MM-DD\"T\"HH24:MI'
-                ),
-                updated_at = SYSTIMESTAMP
-            WHERE id = ?
-        ", [
-            $validated['volunteer_id'],
-            $validated['title'],
-            $validated['description'] ?? null,
-            $validated['status'],
-            $validated['deadline'] ?? null,
-            $id,
-        ]);
+        try {
+            DB::update("
+                UPDATE tasks
+                SET
+                    volunteer_id = ?,
+                    title = ?,
+                    description = ?,
+                    status = ?,
+                    deadline = TO_TIMESTAMP(
+                        ?,
+                        'YYYY-MM-DD\"T\"HH24:MI'
+                    ),
+                    completed_at =
+                        CASE
+                            WHEN ? = 'completed'
+                            THEN NVL(
+                                completed_at,
+                                SYSTIMESTAMP
+                            )
+                            ELSE NULL
+                        END,
+                    updated_at = SYSTIMESTAMP
+                WHERE id = ?
+            ", [
+                $validated['volunteer_id'],
+                $validated['title'],
+                $validated['description'] ?? null,
+                $validated['status'],
+                $validated['deadline'] ?? null,
+                $validated['status'],
+                $id,
+            ]);
+        } catch (QueryException $exception) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Task could not be updated.'
+                );
+        }
 
         return redirect()
             ->route('admin.tasks.index')
-            ->with('success', 'Task updated successfully.');
+            ->with(
+                'success',
+                'Task updated successfully.'
+            );
     }
 
+    /**
+     * Delete a task.
+     */
     public function destroy($id): RedirectResponse
     {
         $task = DB::selectOne("
             SELECT id
             FROM tasks
             WHERE id = ?
-        ", [$id]);
+        ", [
+            $id,
+        ]);
 
-        abort_if(!$task, 404, 'Task not found.');
+        abort_if(
+            !$task,
+            404,
+            'Task not found.'
+        );
 
         try {
             DB::delete("
                 DELETE FROM tasks
                 WHERE id = ?
-            ", [$id]);
-
-            return redirect()
-                ->route('admin.tasks.index')
-                ->with('success', 'Task deleted successfully.');
+            ", [
+                $id,
+            ]);
         } catch (QueryException $exception) {
             return back()->with(
                 'error',
                 'Task could not be deleted.'
             );
         }
+
+        return redirect()
+            ->route('admin.tasks.index')
+            ->with(
+                'success',
+                'Task deleted successfully.'
+            );
     }
 
+    /**
+     * Volunteer starts an assigned task.
+     */
     public function start($id): RedirectResponse
     {
-        $this->findOwnedTask($id);
+        $task = $this->findOwnedTask($id);
 
-        DB::update("
+        if (strtolower($task->status) === 'completed') {
+            return back()->with(
+                'error',
+                'A completed task cannot be started again.'
+            );
+        }
+
+        if (strtolower($task->status) === 'in_progress') {
+            return back()->with(
+                'error',
+                'This task is already in progress.'
+            );
+        }
+
+        $updated = DB::update("
             UPDATE tasks
             SET
                 status = 'in_progress',
+                completed_at = NULL,
                 updated_at = SYSTIMESTAMP
             WHERE id = ?
             AND LOWER(status) = 'pending'
-        ", [$id]);
+        ", [
+            $id,
+        ]);
+
+        if ($updated === 0) {
+            return back()->with(
+                'error',
+                'Task status could not be changed.'
+            );
+        }
 
         return back()->with(
             'success',
@@ -269,22 +421,41 @@ class TaskController extends Controller
         );
     }
 
+    /**
+     * Volunteer completes an assigned task.
+     */
     public function complete($id): RedirectResponse
     {
-        $this->findOwnedTask($id);
+        $task = $this->findOwnedTask($id);
 
-        DB::update("
+        if (strtolower($task->status) === 'completed') {
+            return back()->with(
+                'error',
+                'This task is already completed.'
+            );
+        }
+
+        $updated = DB::update("
             UPDATE tasks
             SET
                 status = 'completed',
+                completed_at = SYSTIMESTAMP,
                 updated_at = SYSTIMESTAMP
             WHERE id = ?
-            AND LOWER(status) IN
-            (
+            AND LOWER(status) IN (
                 'pending',
                 'in_progress'
             )
-        ", [$id]);
+        ", [
+            $id,
+        ]);
+
+        if ($updated === 0) {
+            return back()->with(
+                'error',
+                'Task could not be completed.'
+            );
+        }
 
         return back()->with(
             'success',
@@ -292,15 +463,33 @@ class TaskController extends Controller
         );
     }
 
+    /**
+     * Redirect volunteer to dashboard task list.
+     */
     public function myTasks(): RedirectResponse
     {
-        return redirect()->route('volunteer.dashboard');
+        return redirect()
+            ->route('volunteer.dashboard');
     }
 
+    /**
+     * Find a task owned by the authenticated approved volunteer.
+     */
     private function findOwnedTask($taskId): object
     {
+        $userId = Auth::id();
+
+        abort_if(
+            $userId === null,
+            401,
+            'Unauthenticated.'
+        );
+
         $task = DB::selectOne("
-            SELECT t.id, t.status
+            SELECT
+                t.id,
+                t.status,
+                t.completed_at
             FROM tasks t
             JOIN volunteers v
                 ON t.volunteer_id = v.id
@@ -309,7 +498,7 @@ class TaskController extends Controller
             AND LOWER(v.status) = 'approved'
         ", [
             $taskId,
-            auth()->id(),
+            $userId,
         ]);
 
         abort_if(
@@ -321,6 +510,9 @@ class TaskController extends Controller
         return $task;
     }
 
+    /**
+     * Return all approved volunteers for admin task forms.
+     */
     private function approvedVolunteers(): array
     {
         return DB::select("

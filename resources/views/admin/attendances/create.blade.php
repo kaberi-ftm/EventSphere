@@ -1,19 +1,21 @@
 @extends('layouts.admin')
 
-@section('title', 'Register User')
+@section('title', 'Mark Attendance')
 
 @section('content')
 
 <div class="container">
 
     <h2 class="mb-4">
-        Register For Event
+        Mark Attendance
     </h2>
 
     <div class="card p-4">
 
-        <form method="POST"
-              action="{{ route('admin.registrations.store') }}">
+        <form
+            method="POST"
+            action="{{ route('admin.attendances.store') }}"
+        >
 
             @csrf
 
@@ -48,7 +50,7 @@
             <div class="mb-3">
 
                 <label class="form-label">
-                    Upcoming Event
+                    Event
                 </label>
 
                 <select
@@ -73,12 +75,35 @@
 
             </div>
 
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Present?
+                </label>
+
+                <select
+                    name="is_present"
+                    class="form-control"
+                >
+
+                    <option value="Y">
+                        Present
+                    </option>
+
+                    <option value="N">
+                        Absent
+                    </option>
+
+                </select>
+
+            </div>
+
             <button class="btn btn-success">
-                Register
+                Save Attendance
             </button>
 
             <a
-                href="{{ route('admin.registrations.index') }}"
+                href="{{ route('admin.attendances.index') }}"
                 class="btn btn-secondary"
             >
                 Back

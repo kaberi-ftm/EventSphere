@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Registration')
+@section('title', 'Edit Attendance')
 
 @section('content')
 
@@ -8,19 +8,20 @@
 
     <div class="card shadow-sm">
         <div class="card-header">
-            <h3>Edit Registration</h3>
+            <h3>Edit Attendance</h3>
         </div>
 
         <div class="card-body">
 
             <form
-                action="{{ route('admin.registrations.update',$registration->id) }}"
+                action="{{ route('admin.attendances.update',$attendance->id) }}"
                 method="POST">
 
                 @csrf
                 @method('PUT')
 
                 <div class="mb-3">
+
                     <label>Event</label>
 
                     <select
@@ -31,7 +32,7 @@
 
                             <option
                                 value="{{ $event->id }}"
-                                {{ $registration->event_id == $event->id ? 'selected' : '' }}>
+                                {{ $attendance->event_id == $event->id ? 'selected' : '' }}>
 
                                 {{ $event->title }}
 
@@ -40,9 +41,11 @@
                         @endforeach
 
                     </select>
+
                 </div>
 
                 <div class="mb-3">
+
                     <label>User</label>
 
                     <select
@@ -53,7 +56,7 @@
 
                             <option
                                 value="{{ $user->id }}"
-                                {{ $registration->user_id == $user->id ? 'selected' : '' }}>
+                                {{ $attendance->user_id == $user->id ? 'selected' : '' }}>
 
                                 {{ $user->name }}
 
@@ -62,38 +65,35 @@
                         @endforeach
 
                     </select>
+
                 </div>
 
                 <div class="mb-3">
-                    <label>Status</label>
+
+                    <label>Attendance Status</label>
 
                     <select
-                        name="status"
+                        name="is_present"
                         class="form-control">
 
                         <option
-                            value="pending"
-                            {{ $registration->status=='pending'?'selected':'' }}>
-                            Pending
+                            value="Y"
+                            {{ $attendance->is_present=='Y'?'selected':'' }}>
+                            Present
                         </option>
 
                         <option
-                            value="approved"
-                            {{ $registration->status=='approved'?'selected':'' }}>
-                            Approved
-                        </option>
-
-                        <option
-                            value="cancelled"
-                            {{ $registration->status=='cancelled'?'selected':'' }}>
-                            Cancelled
+                            value="N"
+                            {{ $attendance->is_present=='N'?'selected':'' }}>
+                            Absent
                         </option>
 
                     </select>
+
                 </div>
 
                 <button class="btn btn-primary">
-                    Update Registration
+                    Update Attendance
                 </button>
 
             </form>

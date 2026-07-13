@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\QueryException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class ClubController extends Controller
 {
-    /**
-     * Display all clubs.
-     */
-    public function index()
+    public function index(): View
     {
         $clubs = DB::select("
             SELECT
@@ -19,16 +19,13 @@ class ClubController extends Controller
             FROM clubs c
             LEFT JOIN users u
                 ON c.admin_user_id = u.id
-            ORDER BY c.id
+            ORDER BY c.id DESC
         ");
 
         return view('admin.clubs.index', compact('clubs'));
     }
 
-    /**
-     * Show create form.
-     */
-    public function create()
+    public function create(): View
     {
         $admins = DB::select("
             SELECT id, name
@@ -39,16 +36,13 @@ class ClubController extends Controller
         return view('admin.clubs.create', compact('admins'));
     }
 
-    /**
-     * Store a new club.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|max:100',
-            'description' => 'nullable',
-            'founded_date' => 'nullable|date',
-            'admin_user_id' => 'nullable|exists:users,id',
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'founded_date' => ['nullable', 'date'],
+            'admin_user_id' => ['nullable', 'exists:users,id'],
         ]);
 
         DB::insert("
@@ -61,12 +55,20 @@ class ClubController extends Controller
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, SYSDATE, SYSDATE)
+            VALUES
+            (
+                ?,
+                ?,
+                TO_DATE(?, 'YYYY-MM-DD'),
+                ?,
+                SYSTIMESTAMP,
+                SYSTIMESTAMP
+            )
         ", [
-            $request->name,
-            $request->description,
-            $request->founded_date,
-            $request->admin_user_id,
+            $validated['name'],
+            $validated['description'] ?? null,
+            $validated['founded_date'] ?? null,
+            $validated['admin_user_id'] ?? null,
         ]);
 
         return redirect()
@@ -74,16 +76,32 @@ class ClubController extends Controller
             ->with('success', 'Club created successfully.');
     }
 
-    /**
-     * Show edit form.
-     */
-    public function edit($id)
+    public function show($id): View
+    {
+        $club = DB::selectOne("
+            SELECT
+                c.*,
+                u.name AS admin_name
+            FROM clubs c
+            LEFT JOIN users u
+                ON c.admin_user_id = u.id
+            WHERE c.id = ?
+        ", [$id]);
+
+        abort_if(!$club, 404, 'Club not found.');
+
+        return view('admin.clubs.show', compact('club'));
+    }
+
+    public function edit($id): View
     {
         $club = DB::selectOne("
             SELECT *
             FROM clubs
             WHERE id = ?
         ", [$id]);
+
+        abort_if(!$club, 404, 'Club not found.');
 
         $admins = DB::select("
             SELECT id, name
@@ -94,16 +112,23 @@ class ClubController extends Controller
         return view('admin.clubs.edit', compact('club', 'admins'));
     }
 
-    /**
-     * Update club.
-     */
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'name' => 'required|max:100',
-            'description' => 'nullable',
-            'founded_date' => 'nullable|date',
-            'admin_user_id' => 'nullable|exists:users,id',
+    public function update(
+        Request $request,
+        $id
+    ): RedirectResponse {
+        $club = DB::selectOne("
+            SELECT id
+            FROM clubs
+            WHERE id = ?
+        ", [$id]);
+
+        abort_if(!$club, 404, 'Club not found.');
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'founded_date' => ['nullable', 'date'],
+            'admin_user_id' => ['nullable', 'exists:users,id'],
         ]);
 
         DB::update("
@@ -111,16 +136,16 @@ class ClubController extends Controller
             SET
                 name = ?,
                 description = ?,
-                founded_date = ?,
+                founded_date = TO_DATE(?, 'YYYY-MM-DD'),
                 admin_user_id = ?,
-                updated_at = SYSDATE
+                updated_at = SYSTIMESTAMP
             WHERE id = ?
         ", [
-            $request->name,
-            $request->description,
-            $request->founded_date,
-            $request->admin_user_id,
-            $id
+            $validated['name'],
+            $validated['description'] ?? null,
+            $validated['founded_date'] ?? null,
+            $validated['admin_user_id'] ?? null,
+            $id,
         ]);
 
         return redirect()
@@ -128,30 +153,30 @@ class ClubController extends Controller
             ->with('success', 'Club updated successfully.');
     }
 
-    /**
-     * Delete club.
-     */
-    public function destroy($id)
+    public function destroy($id): RedirectResponse
     {
-        DB::delete("
-            DELETE FROM clubs
+        $club = DB::selectOne("
+            SELECT id
+            FROM clubs
             WHERE id = ?
         ", [$id]);
 
-        return redirect()
-            ->route('admin.clubs.index')
-            ->with('success', 'Club deleted successfully.');
-    }
-  public function show($id)
-{
-    $club = DB::selectOne("
-        SELECT c.*, u.name AS admin_name
-        FROM clubs c
-        LEFT JOIN users u
-        ON c.admin_user_id = u.id
-        WHERE c.id = ?
-    ", [$id]);
+        abort_if(!$club, 404, 'Club not found.');
 
-    return view('admin.clubs.show', compact('club'));
-}
+        try {
+            DB::delete("
+                DELETE FROM clubs
+                WHERE id = ?
+            ", [$id]);
+
+            return redirect()
+                ->route('admin.clubs.index')
+                ->with('success', 'Club deleted successfully.');
+        } catch (QueryException $exception) {
+            return back()->with(
+                'error',
+                'Club cannot be deleted because related events or memberships exist.'
+            );
+        }
+    }
 }

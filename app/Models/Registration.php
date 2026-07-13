@@ -1,10 +1,9 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Event;
-use App\Models\User;
 
 class Registration extends Model
 {
@@ -13,6 +12,10 @@ class Registration extends Model
         'user_id',
         'status',
         'registered_at'
+    ];
+
+    protected $casts = [
+        'registered_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

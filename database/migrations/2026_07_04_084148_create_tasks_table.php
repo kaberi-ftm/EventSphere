@@ -6,20 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+
+            // assigned to volunteer
+            $table->foreignId('volunteer_id')
+                ->constrained('volunteers')
+                ->cascadeOnDelete();
+
+            $table->string('title');
+            $table->text('description')->nullable();
+
+            $table->string('status')->default('pending');
+            // pending | in_progress | completed
+
+            $table->timestamp('deadline')->nullable();
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tasks');
