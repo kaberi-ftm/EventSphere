@@ -4,14 +4,14 @@
 <div class="container-fluid py-3">
     <div class="card shadow-sm">
         <div class="card-header">
-            <h4>Add Sponsor</h4>
+            <h4>Add Event Sponsorship</h4>
         </div>
 
         <div class="card-body">
-            @include('admin.sponsors.form', [
-                'action' => route('admin.sponsors.store'),
+            @include('admin.event-sponsors.form', [
+                'action' => route('admin.event-sponsors.store'),
                 'method' => 'POST',
-                'sponsor' => null
+                'eventSponsor' => null
             ])
         </div>
     </div>

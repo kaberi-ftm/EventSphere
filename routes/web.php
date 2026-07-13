@@ -16,7 +16,8 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
-
+use App\Http\Controllers\SponsorController;
+use App\Http\Controllers\EventSponsorController;
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -188,6 +189,15 @@ Route::put(
         */
 
         Route::resource('tasks', TaskController::class);
+        Route::resource(
+    'sponsors',
+    SponsorController::class
+);
+
+Route::resource(
+    'event-sponsors',
+    EventSponsorController::class
+);
     });
 
 /*
