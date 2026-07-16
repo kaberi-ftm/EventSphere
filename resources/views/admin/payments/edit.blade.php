@@ -1,34 +1,34 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Budget')
-@section('page-title', 'Edit Budget')
+@section('title', 'Edit Payment')
+@section('page-title', 'Edit Payment')
 
 @section('content')
 <div class="container-fluid px-0">
 
     <div class="row justify-content-center">
-        <div class="col-xl-9 col-lg-10">
+        <div class="col-xl-10 col-lg-11">
 
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h4 class="mb-1">
                         <i class="bi bi-pencil-square me-2"></i>
-                        Edit Budget #{{ $budget->id }}
+                        Edit Payment #{{ $payment->id }}
                     </h4>
 
                     <p class="text-muted mb-0">
-                        Update budget allocation and status.
+                        Update payment information and status.
                     </p>
                 </div>
 
                 <div class="card-body">
-                    @include('admin.budgets.form', [
+                    @include('admin.payments.form', [
                         'action' => route(
-                            'admin.budgets.update',
-                            $budget->id
+                            'admin.payments.update',
+                            $payment->id
                         ),
                         'method' => 'PUT',
-                        'budget' => $budget
+                        'payment' => $payment
                     ])
                 </div>
             </div>

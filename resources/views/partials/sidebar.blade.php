@@ -1,62 +1,106 @@
 <div class="sidebar-header">
-
     🎉 EventSphere
-
 </div>
 
-<a href="{{ route('admin.dashboard') }}">
+<a href="{{ route('admin.dashboard') }}"
+   class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
     <i class="bi bi-speedometer2"></i>
-    Dashboard
+    <span>Dashboard</span>
 </a>
 
+{{-- Future Users Module --}}
 <a href="#">
     <i class="bi bi-people-fill"></i>
-    Users
+    <span>Users</span>
 </a>
 
-<a href="{{ route('admin.clubs.index') }}">
+<a href="{{ route('admin.clubs.index') }}"
+   class="{{ request()->routeIs('admin.clubs.*') ? 'active' : '' }}">
     <i class="bi bi-buildings"></i>
-    Clubs
+    <span>Clubs</span>
 </a>
 
-<a href="{{ route('admin.events.index') }}">
-    Events
+<a href="{{ route('admin.events.index') }}"
+   class="{{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+    <i class="bi bi-calendar-event-fill"></i>
+    <span>Events</span>
 </a>
 
-<a href="{{ route('admin.venues.index') }}">
+<a href="{{ route('admin.venues.index') }}"
+   class="{{ request()->routeIs('admin.venues.*') ? 'active' : '' }}">
     <i class="bi bi-geo-alt-fill"></i>
-    Venues
+    <span>Venues</span>
 </a>
 
-<a href="{{ route('admin.volunteers.index') }}">
+<a href="{{ route('admin.registrations.index') }}"
+   class="{{ request()->routeIs('admin.registrations.*') ? 'active' : '' }}">
+    <i class="bi bi-person-check-fill"></i>
+    <span>Event Registrations</span>
+</a>
+
+<a href="{{ route('admin.attendances.index') }}"
+   class="{{ request()->routeIs('admin.attendances.*') ? 'active' : '' }}">
+    <i class="bi bi-clipboard-check-fill"></i>
+    <span>Attendances</span>
+</a>
+
+<a href="{{ route('admin.volunteers.index') }}"
+   class="{{ request()->routeIs('admin.volunteers.*') ? 'active' : '' }}">
     <i class="bi bi-person-workspace"></i>
-    Volunteers
-</a>
-<a href="{{ route('admin.registrations.index') }}">
-    Event Registrations
-</a>
-<a href="#">
-    <i class="bi bi-cash-stack"></i>
-    Budgets
+    <span>Volunteers</span>
 </a>
 
+<a href="{{ route('admin.tasks.index') }}"
+   class="{{ request()->routeIs('admin.tasks.*') ? 'active' : '' }}">
+    <i class="bi bi-list-task"></i>
+    <span>Volunteer Tasks</span>
+</a>
+
+<a href="{{ route('admin.sponsors.index') }}"
+   class="{{ request()->routeIs('admin.sponsors.*') ? 'active' : '' }}">
+    <i class="bi bi-building-check"></i>
+    <span>Sponsors</span>
+</a>
+
+<a href="{{ route('admin.event-sponsors.index') }}"
+   class="{{ request()->routeIs('admin.event-sponsors.*') ? 'active' : '' }}">
+    <i class="bi bi-cash-coin"></i>
+    <span>Event Sponsorships</span>
+</a>
+
+<a href="{{ route('admin.budgets.index') }}"
+   class="{{ request()->routeIs('admin.budgets.*') ? 'active' : '' }}">
+    <i class="bi bi-pie-chart-fill"></i>
+    <span>Budgets</span>
+</a>
+
+<a href="{{ route('admin.payments.index') }}"
+   class="{{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+    <i class="bi bi-credit-card-fill"></i>
+    <span>Payments</span>
+</a>
+
+{{-- Future Certificates Module --}}
 <a href="#">
     <i class="bi bi-award-fill"></i>
-    Certificates
+    <span>Certificates</span>
 </a>
 
+{{-- Future Reports Module --}}
 <a href="#">
     <i class="bi bi-bar-chart-fill"></i>
-    Reports
+    <span>Reports</span>
 </a>
 
-<form method="POST" action="{{ route('logout') }}" class="mt-4 px-3">
+<form method="POST"
+      action="{{ route('logout') }}"
+      class="mt-4 px-3">
     @csrf
 
-    <button class="btn btn-danger w-100">
-
+    <button type="submit"
+            class="btn btn-danger w-100">
+        <i class="bi bi-box-arrow-right me-2"></i>
         Logout
-
     </button>
-
 </form>
+

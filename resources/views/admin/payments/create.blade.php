@@ -1,31 +1,31 @@
 @extends('layouts.admin')
 
-@section('title', 'Create Budget')
-@section('page-title', 'Create Budget')
+@section('title', 'Record Payment')
+@section('page-title', 'Record Payment')
 
 @section('content')
 <div class="container-fluid px-0">
 
     <div class="row justify-content-center">
-        <div class="col-xl-9 col-lg-10">
+        <div class="col-xl-10 col-lg-11">
 
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h4 class="mb-1">
-                        <i class="bi bi-wallet2 me-2"></i>
-                        New Event Budget
+                        <i class="bi bi-credit-card me-2"></i>
+                        New Event Payment
                     </h4>
 
                     <p class="text-muted mb-0">
-                        Allocate a budget for an event category.
+                        Record an expense, income or refund.
                     </p>
                 </div>
 
                 <div class="card-body">
-                    @include('admin.budgets.form', [
-                        'action' => route('admin.budgets.store'),
+                    @include('admin.payments.form', [
+                        'action' => route('admin.payments.store'),
                         'method' => 'POST',
-                        'budget' => null
+                        'payment' => null
                     ])
                 </div>
             </div>

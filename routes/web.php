@@ -11,7 +11,8 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\TaskController;
-
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
@@ -134,13 +135,25 @@ Route::middleware(['auth', 'role:admin'])
         | Existing Admin Resources
         |--------------------------------------------------------------------------
         */
+Route::resource('tasks', TaskController::class);
 
+Route::resource('sponsors', SponsorController::class);
+
+Route::resource(
+    'event-sponsors',
+    EventSponsorController::class
+);
+
+Route::resource('budgets', BudgetController::class);
+
+Route::resource('payments', PaymentController::class);
         Route::resource('clubs', ClubController::class);
         Route::resource('events', EventController::class);
         Route::resource('venues', VenueController::class);
         Route::resource('registrations', RegistrationController::class);
         Route::resource('attendances', AttendanceController::class);
-
+Route::resource('budgets', BudgetController::class);
+Route::resource('payments', PaymentController::class);
         /*
         |--------------------------------------------------------------------------
         | Volunteer Administration
