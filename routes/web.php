@@ -19,6 +19,9 @@ use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
 use App\Http\Controllers\SponsorController;
+
+
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventSponsorController;
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +32,16 @@ use App\Http\Controllers\EventSponsorController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get(
+    '/certificates/verify',
+    [CertificateController::class, 'verifyForm']
+)->name('certificates.verify.form');
+
+Route::post(
+    '/certificates/verify',
+    [CertificateController::class, 'verify']
+)->name('certificates.verify');
 
 /*
 |--------------------------------------------------------------------------
@@ -144,7 +157,10 @@ Route::resource(
     'event-sponsors',
     EventSponsorController::class
 );
-
+Route::resource(
+    'certificates',
+    CertificateController::class
+);
 Route::resource('budgets', BudgetController::class);
 
 Route::resource('payments', PaymentController::class);

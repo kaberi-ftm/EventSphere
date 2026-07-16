@@ -84,8 +84,11 @@
     <span>Payments</span>
 </a>
 
-{{-- Future Certificates Module --}}
-<a href="#">
+<a href="{{ route('admin.certificates.index') }}"
+   class="{{ request()->routeIs('admin.certificates.*')
+        ? 'active'
+        : '' }}">
+
     <i class="bi bi-award-fill"></i>
     <span>Certificates</span>
 </a>

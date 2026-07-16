@@ -1,0 +1,183 @@
+SET SQLBLANKLINES ON
+SET DEFINE OFF
+SET SERVEROUTPUT ON
+
+/*
+|--------------------------------------------------------------------------
+| COMPLETE CERTIFICATES TABLE
+|--------------------------------------------------------------------------
+*/
+
+ALTER TABLE CERTIFICATES
+ADD (
+    USER_ID             NUMBER(19) NOT NULL,
+    EVENT_ID            NUMBER(19) NOT NULL,
+    ISSUED_BY            NUMBER(19),
+    CERTIFICATE_NUMBER  VARCHAR2(50) NOT NULL,
+    VERIFICATION_CODE   VARCHAR2(64) NOT NULL,
+    CERTIFICATE_TYPE    VARCHAR2(30)
+        DEFAULT 'participation' NOT NULL,
+    TITLE               VARCHAR2(200) NOT NULL,
+    DESCRIPTION         VARCHAR2(500),
+    ISSUED_AT           TIMESTAMP(6)
+        DEFAULT SYSTIMESTAMP NOT NULL,
+    REVOKED_AT          TIMESTAMP(6),
+    STATUS              VARCHAR2(20)
+        DEFAULT 'issued' NOT NULL
+);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT FK_CERTIFICATE_USER
+FOREIGN KEY (USER_ID)
+REFERENCES USERS(ID);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT FK_CERTIFICATE_EVENT
+FOREIGN KEY (EVENT_ID)
+REFERENCES EVENTS(ID);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT FK_CERTIFICATE_ISSUER
+FOREIGN KEY (ISSUED_BY)
+REFERENCES USERS(ID);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT UQ_CERTIFICATE_NUMBER
+UNIQUE (CERTIFICATE_NUMBER);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT UQ_CERTIFICATE_VERIFY
+UNIQUE (VERIFICATION_CODE);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT UQ_CERT_USER_EVENT_TYPE
+UNIQUE (
+    USER_ID,
+    EVENT_ID,
+    CERTIFICATE_TYPE
+);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT CK_CERTIFICATE_TYPE
+CHECK (
+    CERTIFICATE_TYPE IN (
+        'participation',
+        'volunteer',
+        'achievement',
+        'organizer',
+        'winner'
+    )
+);
+
+ALTER TABLE CERTIFICATES
+ADD CONSTRAINT CK_CERTIFICATE_STATUS
+CHECK (
+    STATUS IN (
+        'issued',
+        'revoked'
+    )
+);
+
+CREATE INDEX IDX_CERTIFICATE_USER
+ON CERTIFICATES(USER_ID);
+
+CREATE INDEX IDX_CERTIFICATE_EVENT
+ON CERTIFICATES(EVENT_ID);
+
+CREATE INDEX IDX_CERTIFICATE_STATUS
+ON CERTIFICATES(STATUS);
+
+
+/*
+|--------------------------------------------------------------------------
+| CERTIFICATE NUMBER SEQUENCE
+|--------------------------------------------------------------------------
+*/
+
+DECLARE
+    V_COUNT NUMBER;
+BEGIN
+    SELECT COUNT(*)
+    INTO V_COUNT
+    FROM USER_SEQUENCES
+    WHERE SEQUENCE_NAME = 'CERTIFICATE_NO_SEQ';
+
+    IF V_COUNT = 0 THEN
+        EXECUTE IMMEDIATE '
+            CREATE SEQUENCE CERTIFICATE_NO_SEQ
+            START WITH 1
+            INCREMENT BY 1
+            NOCACHE
+            NOCYCLE
+        ';
+
+        DBMS_OUTPUT.PUT_LINE(
+            'CERTIFICATE_NO_SEQ created.'
+        );
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(
+            'CERTIFICATE_NO_SEQ already exists.'
+        );
+    END IF;
+END;
+/
+
+
+/*
+|--------------------------------------------------------------------------
+| VALIDATION AND AUTO-GENERATION TRIGGER
+|--------------------------------------------------------------------------
+*/
+
+CREATE OR REPLACE TRIGGER TRG_CERTIFICATE_VALIDATE
+BEFORE INSERT OR UPDATE
+ON CERTIFICATES
+FOR EACH ROW
+BEGIN
+    :NEW.CERTIFICATE_TYPE :=
+        LOWER(TRIM(:NEW.CERTIFICATE_TYPE));
+
+    :NEW.STATUS :=
+        LOWER(TRIM(:NEW.STATUS));
+
+    IF INSERTING THEN
+        IF :NEW.CERTIFICATE_NUMBER IS NULL THEN
+            :NEW.CERTIFICATE_NUMBER :=
+                'EVS-'
+                || TO_CHAR(SYSDATE, 'YYYY')
+                || '-'
+                || LPAD(
+                    CERTIFICATE_NO_SEQ.NEXTVAL,
+                    6,
+                    '0'
+                );
+        END IF;
+
+        IF :NEW.VERIFICATION_CODE IS NULL THEN
+            :NEW.VERIFICATION_CODE :=
+                LOWER(RAWTOHEX(SYS_GUID()));
+        END IF;
+
+        IF :NEW.ISSUED_AT IS NULL THEN
+            :NEW.ISSUED_AT := SYSTIMESTAMP;
+        END IF;
+
+        IF :NEW.CREATED_AT IS NULL THEN
+            :NEW.CREATED_AT := SYSTIMESTAMP;
+        END IF;
+    END IF;
+
+    IF :NEW.STATUS = 'revoked'
+       AND :NEW.REVOKED_AT IS NULL THEN
+        :NEW.REVOKED_AT := SYSTIMESTAMP;
+    END IF;
+
+    IF :NEW.STATUS = 'issued' THEN
+        :NEW.REVOKED_AT := NULL;
+    END IF;
+
+    :NEW.UPDATED_AT := SYSTIMESTAMP;
+END;
+/
+
+SHOW ERRORS TRIGGER TRG_CERTIFICATE_VALIDATE
