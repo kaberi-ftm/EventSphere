@@ -8,10 +8,14 @@
     <span>Dashboard</span>
 </a>
 
-{{-- Future Users Module --}}
-<a href="#">
+<a href="{{ route('admin.users.index') }}"
+   class="{{ request()->routeIs('admin.users.*') ||
+             request()->routeIs('admin.memberships.*')
+                ? 'active'
+                : '' }}">
+
     <i class="bi bi-people-fill"></i>
-    <span>Users</span>
+    <span>Users & Roles</span>
 </a>
 
 <a href="{{ route('admin.clubs.index') }}"

@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ClubMembershipController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClubController;
@@ -211,6 +212,25 @@ Route::resource(
     'event-sponsors',
     EventSponsorController::class
 );
+Route::resource('users', UserController::class);
+
+Route::post(
+    '/users/{user}/memberships',
+    [ClubMembershipController::class, 'store']
+)->name('users.memberships.store');
+
+Route::put(
+    '/memberships/{id}',
+    [ClubMembershipController::class, 'update']
+)->name('memberships.update');
+
+Route::delete(
+    '/memberships/{id}',
+    [ClubMembershipController::class, 'destroy']
+)->name('memberships.destroy');
+
+
+
     });
 
 /*
