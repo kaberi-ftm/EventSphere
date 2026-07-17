@@ -19,8 +19,8 @@ use App\Http\Controllers\Executive\ExecutiveDashboardController;
 use App\Http\Controllers\Participant\ParticipantDashboardController;
 use App\Http\Controllers\Volunteer\VolunteerDashboardController;
 use App\Http\Controllers\SponsorController;
-
-
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventSponsorController;
 /*
@@ -150,7 +150,26 @@ Route::middleware(['auth', 'role:admin'])
         |--------------------------------------------------------------------------
         */
 Route::resource('tasks', TaskController::class);
+Route::resource(
+    'notifications',
+    NotificationController::class
+)->only([
+    'index',
+    'create',
+    'store',
+    'show',
+    'destroy',
+]);
 
+Route::post(
+    '/notifications/read-all',
+    [NotificationController::class, 'markAllAsRead']
+)->name('notifications.read-all');
+
+Route::post(
+    '/notifications/{id}/read',
+    [NotificationController::class, 'markAsRead']
+)->name('notifications.read');
 Route::resource('sponsors', SponsorController::class);
 
 Route::resource(
@@ -161,6 +180,17 @@ Route::resource(
     'certificates',
     CertificateController::class
 );
+
+
+Route::get(
+    '/reports/export/finance',
+    [ReportController::class, 'exportFinance']
+)->name('reports.export.finance');
+
+Route::get(
+    '/reports',
+    [ReportController::class, 'index']
+)->name('reports.index');
 Route::resource('budgets', BudgetController::class);
 
 Route::resource('payments', PaymentController::class);

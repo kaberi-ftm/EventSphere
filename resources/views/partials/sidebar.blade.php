@@ -93,10 +93,22 @@
     <span>Certificates</span>
 </a>
 
-{{-- Future Reports Module --}}
-<a href="#">
+<a href="{{ route('admin.notifications.index') }}"
+   class="{{ request()->routeIs(
+        'admin.notifications.*'
+   ) ? 'active' : '' }}">
+
+    <i class="bi bi-bell-fill"></i>
+    <span>Notifications</span>
+</a>
+
+<a href="{{ route('admin.reports.index') }}"
+   class="{{ request()->routeIs(
+        'admin.reports.*'
+   ) ? 'active' : '' }}">
+
     <i class="bi bi-bar-chart-fill"></i>
-    <span>Reports</span>
+    <span>Reports & Analytics</span>
 </a>
 
 <form method="POST"
