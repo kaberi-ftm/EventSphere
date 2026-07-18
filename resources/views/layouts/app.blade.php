@@ -25,6 +25,10 @@
         'resources/css/app.css',
         'resources/js/app.js'
     ])
+
+    {{-- EventSphere UI Patch: CSS --}}
+    <link rel="stylesheet"
+          href="{{ asset('css/eventsphere-ui.css') }}">
 </head>
 
 <body class="font-sans antialiased">

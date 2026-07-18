@@ -46,7 +46,9 @@
 
                     <td>{{ $registration->user_name }}</td>
 
-                    <td>{{ $registration->event_title }}</td>
+                    <td>{{ $registration->event_title
+    ?? $registration->event_name
+    ?? 'Unknown Event' }}</td>
 
                     <td>
                         <span class="badge bg-success">

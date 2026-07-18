@@ -17,7 +17,7 @@ class RegistrationController extends Controller
                 r.id,
                 r.event_id,
                 r.user_id,
-                e.title AS event_name,
+                e.title AS event_title,
                 u.name AS user_name,
                 r.status,
                 r.registered_at
@@ -163,7 +163,7 @@ class RegistrationController extends Controller
         $registration = DB::selectOne("
             SELECT
                 r.*,
-                e.title AS event_name,
+                e.title AS event_title,
                 u.name AS user_name
             FROM registrations r
             JOIN events e
